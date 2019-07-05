@@ -12,6 +12,7 @@ INCLUDES = -I$(src)/base -I$(src)/kernel -I$(src)/../uds
 
 EXTRA_CFLAGS =	-std=gnu99					\
 		-fno-builtin-memset				\
+		-fno-stack-protector          \
 		-Werror						\
 		-Wframe-larger-than=400				\
 		-Wno-declaration-after-statement		\
