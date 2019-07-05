@@ -76,7 +76,7 @@ typedef int BufferAllocator(PhysicalLayer  *layer,
                             const char     *why,
                             char          **bufferPtr);
 
-/**
+/** // this is where it fails
  * A function which can read an extent from a physicalLayer.
  *
  * @param [in]  layer       The physical layer from which to read

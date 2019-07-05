@@ -453,7 +453,7 @@ static void endSyncRead(BIO *bio, int result)
 
 /**
  * Implements ExtentReader. Exists only for the geometry block; is unset after
- * it is read.
+ * it is read. ////////
  **/
 static int kvdoSynchronousRead(PhysicalLayer       *layer,
                                PhysicalBlockNumber  startBlock,
@@ -461,11 +461,17 @@ static int kvdoSynchronousRead(PhysicalLayer       *layer,
                                char                *buffer,
                                size_t              *blocksRead)
 {
+  logInfo("step1");
+  
   if (blockCount != 1) {
     return VDO_NOT_IMPLEMENTED;
   }
-
+  
+  logInfo("step2");
+  
   KernelLayer *kernelLayer = asKernelLayer(layer);
+
+  logInfo("step3");
 
   struct completion bioWait;
   init_completion(&bioWait);
@@ -474,13 +480,31 @@ static int kvdoSynchronousRead(PhysicalLayer       *layer,
   if (result != VDO_SUCCESS) {
     return result;
   }
+  
+    logInfo("step4");
+
   setBioOperationRead(bio);
   bio->bi_end_io  = endSyncRead;
   bio->bi_private = &bioWait;
+  
+    logInfo("step5 setBioBlockDevice");
+
   setBioBlockDevice(bio, getKernelLayerBdev(kernelLayer));
+  
+    logInfo("step5 setBioSector");
+  
   setBioSector(bio, blockToSector(kernelLayer, startBlock));
+  
+      logInfo("step5 generic_make_request");
+
   generic_make_request(bio);
+  
+        logInfo("step5 wait_for_completion");
+
   wait_for_completion(&bioWait);
+  
+    logInfo("wait_for_completion done");
+
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(4,4,0)
   if (getBioResult(bio) != 0) {
 #else
@@ -497,6 +521,9 @@ static int kvdoSynchronousRead(PhysicalLayer       *layer,
   if (blocksRead != NULL) {
     *blocksRead = blockCount;
   }
+  
+    logInfo("step7");
+
   return VDO_SUCCESS;
 }
 
@@ -603,6 +630,7 @@ int makeKernelLayer(uint64_t        startingSector,
                     char          **reason,
                     KernelLayer   **layerPtr)
 {
+  logInfo("makeKernelLayer");
   // VDO-3769 - Set a generic reason so we don't ever return garbage.
   *reason = "Unspecified error";
 
@@ -756,16 +784,26 @@ int makeKernelLayer(uint64_t        startingSector,
     return result;
   }
 
+  logInfo("going to load geometry block");
+
   // Read the geometry block so we know how to set up the index. Allow it to
   // do synchronous reads.
+  
+  logInfo("set layer->common.reader = kvdoSynchronousRead ");
+  
   layer->common.reader = kvdoSynchronousRead;
   result = loadVolumeGeometry(&layer->common, &layer->geometry);
+  
+  logInfo("loadVolumeGeometry() result : %d", result);
+
   layer->common.reader = NULL;
   if (result != VDO_SUCCESS) {
     *reason = "Could not load geometry block";
     freeKernelLayer(layer);
     return result;
   }
+
+  logInfo("loaded geometry block successfully");
 
   // Albireo Timeout Reporter
   initPeriodicEventReporter(&layer->albireoTimeoutReporter,
