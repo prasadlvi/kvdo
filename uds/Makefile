@@ -7,7 +7,6 @@ INCLUDES = -I$(src)
 
 EXTRA_CFLAGS =	-std=gnu99				\
 		-fno-builtin-memset			\
-		-Werror					\
 		-Wframe-larger-than=400			\
 		-Wno-declaration-after-statement	\
 		-DUDS_VERSION=\"$(UDS_VERSION)\"	\
