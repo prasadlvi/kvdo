@@ -426,23 +426,15 @@ void kvdoReadBlock(DataVIO             *dataVIO,
 /**********************************************************************/
 void kvdoReadDataVIO(DataVIO *dataVIO)
 {
-  logInfo("kvdoReadDataVIO() start");
   ASSERT_LOG_ONLY(!isWriteVIO(dataVIOAsVIO(dataVIO)),
                   "operation set correctly for data read");
-                  
-  logInfo("before dataVIOAddTraceRecord()");
-
   dataVIOAddTraceRecord(dataVIO, THIS_LOCATION("$F;io=readData"));
-
-  logInfo("after dataVIOAddTraceRecord()");
 
   if (isCompressed(dataVIO->mapped.state)) {
     kvdoReadBlock(dataVIO, dataVIO->mapped.pbn, dataVIO->mapped.state,
                   BIO_Q_ACTION_COMPRESSED_DATA, readDataKVIOReadBlockCallback);
     return;
   }
-
-  logInfo("after kvdoReadBlock()");
 
   KVIO *kvio = dataVIOAsKVIO(dataVIO);
   BIO  *bio  = kvio->bio;

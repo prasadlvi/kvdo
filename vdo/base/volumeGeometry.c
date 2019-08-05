@@ -352,14 +352,10 @@ static int encodeGeometryBlock(const VolumeGeometry *geometry, Buffer *buffer)
  **/
 static int readGeometryBlock(PhysicalLayer *layer, byte **blockPtr)
 {
-  logInfo("readGeometryBlock() start");
-  
   int result = ASSERT(layer->reader != NULL, "Layer must have a sync reader");
   if (result != VDO_SUCCESS) {
     return result;
   }
-
-  logInfo("readGeometryBlock() assert 1 success");
 
   char *block;
   result = layer->allocateIOBuffer(layer, VDO_BLOCK_SIZE, "geometry block",
@@ -368,16 +364,11 @@ static int readGeometryBlock(PhysicalLayer *layer, byte **blockPtr)
     return result;
   }
 
-  logInfo("allocateIOBuffer() success");
-  logInfo(" layer->reader kvdoReadDataVIO ");
-
   result = layer->reader(layer, GEOMETRY_BLOCK_LOCATION, 1, block, NULL);
   if (result != VDO_SUCCESS) {
     FREE(block);
     return result;
   }
-
-  logInfo("readGeometryBlock() reader success");
 
   *blockPtr = (byte *) block;
   return VDO_SUCCESS;
@@ -386,15 +377,11 @@ static int readGeometryBlock(PhysicalLayer *layer, byte **blockPtr)
 /**********************************************************************/
 int loadVolumeGeometry(PhysicalLayer *layer, VolumeGeometry *geometry)
 {
-
-  logInfo("going to read geometry block");
   byte *block;
-  int result = readGeometryBlock(layer, &block); //// error here
+  int result = readGeometryBlock(layer, &block);
   if (result != VDO_SUCCESS) {
     return result;
   }
-  
-  logInfo("readGeometryBlock success");
 
   Buffer *buffer;
   result = wrapBuffer(block, VDO_BLOCK_SIZE, VDO_BLOCK_SIZE, &buffer);
@@ -403,7 +390,7 @@ int loadVolumeGeometry(PhysicalLayer *layer, VolumeGeometry *geometry)
     return result;
   }
 
-  result = decodeGeometryBlock(buffer, geometry); //
+  result = decodeGeometryBlock(buffer, geometry);
   if (result != VDO_SUCCESS) {
     freeBuffer(&buffer);
     FREE(block);
